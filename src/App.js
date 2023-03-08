@@ -1,11 +1,28 @@
+import { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
+import { useDispatch } from "react-redux";
+
 import Home from "./routes/home/home.component";
 import Navigation from "./components/navigation/navigation.component";
 import Authentication from "./routes/authentication/authentication.component";
 import Shop from "./routes/shop/shop.component";
 import Checkout from "./routes/checkout/checkout.component";
+import { createUserDocumentFromAuth, onAuthStateChangedListener } from "./util/firebase/firebase.util";
+import { setCurrentUser } from "./store/user/user.action";
 
 const App = () => {
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    // this firebase listener returns a unsubscribe fn
+    // useEffect will call this fn once App is unmounted and avoid memory leak
+    return onAuthStateChangedListener((user) => {
+      if (user) createUserDocumentFromAuth(user);
+      dispatch(setCurrentUser(user));
+    });
+  }, [dispatch]); // dispatch will never change, passed just to avoid warning
+
   return (
     <Routes>
       <Route path="/" element={<Navigation />} >
